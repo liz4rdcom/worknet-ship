@@ -37,6 +37,7 @@ async function buildAndStart(buildInfo) {
     let outData = child_process.execSync(`run.bat "${apiPath}"`);
 
     isBuildProccessInProgress = false;
+	console.log('build and start finished');
 }
 
 setInterval(async () => {
@@ -45,7 +46,10 @@ setInterval(async () => {
             console.log('token is not defined');
             return;
         }
-        if (isBuildProccessInProgress) return;
+        if (isBuildProccessInProgress) {
+			console.log('build is in progress')
+			return;
+		}
         let lastCircleCIBuild = await getLastBuildInfoFromCircleCI();
         if (lastCircleCIBuild.status !== 'success') {
             console.log('last build status from circle_ci isnt success', 'current status is : ', lastCircleCIBuild.status)
@@ -72,7 +76,7 @@ setInterval(async () => {
         isBuildProccessInProgress = false;
     }
 
-}, 1000)
+}, 100000)
 
 app.get('/build/:buildNumber', async function (req, res, next) {
     let logs = await fetchArtifacts(req.params.buildNumber, req.query.token);
