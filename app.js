@@ -50,6 +50,10 @@ setInterval(async () => {
             console.log('last build status from circle_ci isnt success', 'current status is : ', lastCircleCIBuild.status)
             return;
         }
+        if (lastCircleCIBuild.branch !== 'master') {
+            console.log('last build branch from circle_ci isnt master', 'current branch is : ', lastCircleCIBuild.branch)
+            return;
+        }
 
         let fileExists = fs.existsSync('lastcircleci.json');
         if (!fileExists) {
