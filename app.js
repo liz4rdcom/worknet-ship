@@ -23,6 +23,7 @@ async function getLastBuildInfoFromCircleCI() {
     return {
         build_num: response[0].build_num,
         status: response[0].status
+        branch: response[0].branch
     };
 }
 
