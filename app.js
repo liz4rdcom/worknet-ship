@@ -22,7 +22,7 @@ async function getLastBuildInfoFromCircleCI() {
     let response = await rp(options);
     return {
         build_num: response[0].build_num,
-        status: response[0].status
+        status: response[0].status,
         branch: response[0].branch
     };
 }
