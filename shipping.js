@@ -1,8 +1,9 @@
-const rp = require('request-promise');
+// const rp = require('request-promise');
 const http = require('http');
 const fs = require('fs');
 const mkdirp = require('mkdirp');
 const path = require('path');
+const request = require('request');
 
 const circleci_working_dir='circleci/repo/';
 
@@ -23,38 +24,44 @@ function requestOptions(buildNumber, token) {
     return options
 }
 
-function fileExtension(fullPath) {
-  let index = fullPath.lastIndexOf('.')
+function generateFileFullPath(url,buildNumber) {
+  let wdirindex = url.indexOf(circleci_working_dir);
+  if(wdirindex===-1) throw new Error('cant find working dir');
 
-  if (index === -1) return ''
+  let pathToSave = url.substring(wdirindex+circleci_working_dir.length);
 
-  return fullPath.slice(index + 1).toLowerCase()
+  const pathToCreate = path.dirname(pathToSave);
+
+  let fullDir = `${buildNumber}/${pathToCreate}`;
+  mkdirp.sync(fullDir);
+
+  return `${buildNumber}/${pathToSave}`;
 }
 
 async function downloadAndSaveArtifactItem(url,buildNumber){
 
     let options = {
-        uri: url,
-        json: false,
         strictSSL: false,
         pool: pool
     };
 
     try {
-        let data  = await  rp(options);
+        let fullPath = generateFileFullPath(url, buildNumber)
 
-        let wdirindex = options.uri.indexOf(circleci_working_dir);
-        if(wdirindex===-1) throw new Error('cant find working dir');
+        let fileStream = fs.createWriteStream(fullPath)
 
-        let pathToSave = options.uri.substring(wdirindex+circleci_working_dir.length);
-        const pathToCreate = path.dirname(pathToSave);
-        let fullDir = `${buildNumber}/${pathToCreate}`;
-        mkdirp.sync(fullDir);
-        let fullPath=`${buildNumber}/${pathToSave}`;
-        console.log('saving-',fullPath);
-        let encoding = webFontExtensions.includes(fileExtension(fullPath)) ? 'ascii' : 'utf8'
-        fs.writeFileSync(fullPath, data, {encoding});
-        return `OK-${options.uri}`;
+        return await new Promise(function (resolve, reject) {
+          fileStream.on('finish', function () {
+            resolve(`OK-${options.uri}`)
+          })
+
+          fileStream.on('error', reject)
+
+          console.log('saving-',fullPath)
+
+          request(url, options).pipe(fileStream)
+        })
+
     } catch (error) {
         console.error(error);
         return `Error-${options.uri}`;
