@@ -1,4 +1,4 @@
-// const rp = require('request-promise');
+const rp = require('request-promise');
 const http = require('http');
 const fs = require('fs');
 const mkdirp = require('mkdirp');
