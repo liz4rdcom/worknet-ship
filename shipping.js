@@ -52,7 +52,7 @@ async function downloadAndSaveArtifactItem(url,buildNumber){
         mkdirp.sync(fullDir);
         let fullPath=`${buildNumber}/${pathToSave}`;
         console.log('saving-',fullPath);
-        let encoding = webFontExtensions.includes(fileExtension(fullPath)) ? 'ansi' : 'utf8'
+        let encoding = webFontExtensions.includes(fileExtension(fullPath)) ? 'ascii' : 'utf8'
         fs.writeFileSync(fullPath, data, {encoding});
         return `OK-${options.uri}`;
     } catch (error) {
