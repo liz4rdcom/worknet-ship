@@ -13,7 +13,7 @@ pool.maxSockets = 100;
 
 function requestOptions(buildNumber, token) {
     const url = `https://circleci.com/api/v1.1/project/github/liz4rdcom/worknet/${buildNumber}/artifacts?circle-token=${token}`
-    
+
     var options = {
         uri: url,
         json: true,
@@ -34,9 +34,6 @@ async function downloadAndSaveArtifactItem(url,buildNumber){
 
     try {
         let data  = await  rp(options);
-        const buffer = Buffer.from(data, 'utf8');
-
-        
 
         let wdirindex = options.uri.indexOf(circleci_working_dir);
         if(wdirindex===-1) throw new Error('cant find working dir');
@@ -47,11 +44,11 @@ async function downloadAndSaveArtifactItem(url,buildNumber){
         mkdirp.sync(fullDir);
         let fullPath=`${buildNumber}/${pathToSave}`;
         console.log('saving-',fullPath);
-        fs.writeFileSync(fullPath, buffer);
-        return `OK-${options.uri}`;   
+        fs.writeFileSync(fullPath, data);
+        return `OK-${options.uri}`;
     } catch (error) {
         console.error(error);
-        return `Error-${options.uri}`;   
+        return `Error-${options.uri}`;
     }
 }
 
@@ -59,7 +56,7 @@ async function fetchArtifacts(buildNumber, token) {
     try {
         outDir=buildNumber;
         let response  = await  rp(requestOptions(buildNumber, token));
-        
+
         let downloadStatus = await Promise.all(response.map(async t=>{
             return await downloadAndSaveArtifactItem(t.url,buildNumber);
         }));
@@ -69,11 +66,8 @@ async function fetchArtifacts(buildNumber, token) {
     } catch (error) {
         console.error(error);
     }
-    
+
 
 }
 
 module.exports = fetchArtifacts
-
-
-    
