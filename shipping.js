@@ -9,7 +9,7 @@ const circleci_working_dir='circleci/repo/';
 let pool = new http.Agent();
 pool.maxSockets = 100;
 
-
+const webFontExtensions = ['eot', 'ttf', 'woff', 'woff2']
 
 function requestOptions(buildNumber, token) {
     const url = `https://circleci.com/api/v1.1/project/github/liz4rdcom/worknet/${buildNumber}/artifacts?circle-token=${token}`
@@ -21,6 +21,14 @@ function requestOptions(buildNumber, token) {
     };
 
     return options
+}
+
+function fileExtension(fullPath) {
+  let index = fullPath.lastIndexOf('.')
+
+  if (index === -1) return ''
+
+  return fullPath.slice(index + 1).toLowerCase()
 }
 
 async function downloadAndSaveArtifactItem(url,buildNumber){
@@ -44,7 +52,8 @@ async function downloadAndSaveArtifactItem(url,buildNumber){
         mkdirp.sync(fullDir);
         let fullPath=`${buildNumber}/${pathToSave}`;
         console.log('saving-',fullPath);
-        fs.writeFileSync(fullPath, data);
+        let encoding = webFontExtensions.includes(fileExtension(fullPath)) ? 'ansi' : 'utf8'
+        fs.writeFileSync(fullPath, data, {encoding});
         return `OK-${options.uri}`;
     } catch (error) {
         console.error(error);
